@@ -53,9 +53,10 @@ config.set_provider_config("llm", "AtlasCloud", {"model": "deepseek-ai/deepseek-
 *Requires `ATLASCLOUD_API_KEY` environment variable*
 
 `deepseek-ai/deepseek-v4-pro` is a reasoning model: it spends completion tokens on a hidden chain of
-thought before the answer, so a small `max_tokens` can return an empty `content` with
-`finish_reason="length"`. This provider leaves `max_tokens` unset, which is safe. Non-reasoning ids
-such as `deepseek-ai/DeepSeek-V3.1` are unaffected.
+thought before the answer. This provider never sets `max_tokens`, so the model can finish reasoning
+and return content. Extra config keys are passed to the OpenAI client constructor (e.g. `timeout`);
+request-level parameters such as `max_tokens` are not supported. If `ATLASCLOUD_API_KEY` is unset
+(and no `api_key` is given) the provider raises an error instead of falling back to `OPENAI_API_KEY`.
 
 ### IBM WatsonX
 

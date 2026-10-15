@@ -52,10 +52,14 @@ class TestAtlasCloud(unittest.TestCase):
         """Test initialization with default parameters."""
         # Clear environment variables temporarily
         with patch.dict('os.environ', {}, clear=True):
+            with self.assertRaises(ValueError) as ctx:
+                AtlasCloud()
+            self.assertIn("ATLASCLOUD_API_KEY", str(ctx.exception))
+            self.mock_openai.OpenAI.assert_not_called()
+        with patch.dict('os.environ', {'ATLASCLOUD_API_KEY': 'test_key'}, clear=True):
             llm = AtlasCloud()
-            # Check that OpenAI client was initialized correctly
             self.mock_openai.OpenAI.assert_called_once_with(
-                api_key=None,
+                api_key="test_key",
                 base_url="https://api.atlascloud.ai/v1"
             )
             
@@ -74,7 +78,7 @@ class TestAtlasCloud(unittest.TestCase):
 
     def test_init_with_api_key_parameter(self):
         """Test initialization with API key as parameter."""
-        with patch.dict('os.environ', {}, clear=True):
+        with patch.dict('os.environ', {'ATLASCLOUD_API_KEY': 'test_key'}, clear=True):
             api_key = "test_api_key_param"
             llm = AtlasCloud(api_key=api_key)
             self.mock_openai.OpenAI.assert_called_with(
@@ -84,7 +88,7 @@ class TestAtlasCloud(unittest.TestCase):
 
     def test_init_with_custom_model(self):
         """Test initialization with custom model."""
-        with patch.dict('os.environ', {}, clear=True):
+        with patch.dict('os.environ', {'ATLASCLOUD_API_KEY': 'test_key'}, clear=True):
             model = "deepseek-ai/DeepSeek-V3.1"
             llm = AtlasCloud(model=model)
             self.assertEqual(llm.model, model)
@@ -92,18 +96,18 @@ class TestAtlasCloud(unittest.TestCase):
     def test_init_with_custom_base_url(self):
         """Test initialization with custom base URL."""
         # Clear environment variables temporarily
-        with patch.dict('os.environ', {}, clear=True):
+        with patch.dict('os.environ', {'ATLASCLOUD_API_KEY': 'test_key'}, clear=True):
             base_url = "https://custom.atlascloud.api"
             llm = AtlasCloud(base_url=base_url)
             self.mock_openai.OpenAI.assert_called_with(
-                api_key=None,
+                api_key="test_key",
                 base_url=base_url
             )
 
     def test_chat_single_message(self):
         """Test chat with a single message."""
         # Create AtlasCloud instance with mocked environment
-        with patch.dict('os.environ', {}, clear=True):
+        with patch.dict('os.environ', {'ATLASCLOUD_API_KEY': 'test_key'}, clear=True):
             llm = AtlasCloud()
             
         messages = [{"role": "user", "content": "Hello"}]
@@ -123,7 +127,7 @@ class TestAtlasCloud(unittest.TestCase):
     def test_chat_multiple_messages(self):
         """Test chat with multiple messages."""
         # Create AtlasCloud instance with mocked environment
-        with patch.dict('os.environ', {}, clear=True):
+        with patch.dict('os.environ', {'ATLASCLOUD_API_KEY': 'test_key'}, clear=True):
             llm = AtlasCloud()
             
         messages = [
@@ -148,7 +152,7 @@ class TestAtlasCloud(unittest.TestCase):
     def test_chat_with_error(self):
         """Test chat when an error occurs."""
         # Create AtlasCloud instance with mocked environment
-        with patch.dict('os.environ', {}, clear=True):
+        with patch.dict('os.environ', {'ATLASCLOUD_API_KEY': 'test_key'}, clear=True):
             llm = AtlasCloud()
             
         # Mock an error response

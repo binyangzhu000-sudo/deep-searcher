@@ -11,11 +11,14 @@ class AtlasCloud(BaseLLM):
     Atlas Cloud is an OpenAI-compatible inference platform, so this provider
     reuses the OpenAI client with a different base URL.
 
+    Extra kwargs are client options forwarded to the OpenAI client constructor
+    (e.g. `timeout`, `max_retries`); request-level parameters such as
+    `max_tokens` or `temperature` are not supported through this provider.
+
     Note on the default model: `deepseek-ai/deepseek-v4-pro` is a reasoning
-    model. It spends completion tokens on a hidden chain of thought before the
-    answer, so if a caller passes a small `max_tokens` through kwargs the reply
-    can come back with `finish_reason="length"` and empty content. Leaving
-    `max_tokens` unset (as this provider does) is safe.
+    model that spends completion tokens on a hidden chain of thought before
+    the answer. This provider never sets `max_tokens`, so the model is free to
+    finish its reasoning and return content.
     """
 
     def __init__(self, model: str = "deepseek-ai/deepseek-v4-pro", **kwargs):
@@ -26,6 +29,13 @@ class AtlasCloud(BaseLLM):
             api_key = kwargs.pop("api_key")
         else:
             api_key = os.getenv("ATLASCLOUD_API_KEY")
+        if not api_key:
+            # Fail explicitly: the OpenAI client would otherwise silently fall
+            # back to OPENAI_API_KEY and send it to the Atlas Cloud endpoint.
+            raise ValueError(
+                "Atlas Cloud API key is not set. Set the ATLASCLOUD_API_KEY "
+                "environment variable or pass `api_key` in the provider config."
+            )
         if "base_url" in kwargs:
             base_url = kwargs.pop("base_url")
         else:
